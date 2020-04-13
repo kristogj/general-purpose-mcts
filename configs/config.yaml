@@ -3,14 +3,14 @@ Game Simulator:
   # Game type - either Nim or Ledge
   game_type: "nim"
 
-  # Number of games in a batch
-  batch_size: 64
+  # G - Number of games in a batch
+  batch_size: 1
 
-  # Starting player option - should player 1 or player 2 start
+  # P - Starting player option - could be Player 1, 2 or 3 (random)
   starting_player: 1
 
-  # Number of simulations (and hence roll-outs) per actual game move
-  number_of_simulations_per_game_move: 10
+  # M - Number of simulations (and hence roll-outs) per actual game move
+  num_sim: 500
 
   # Turn on/off game statistics
   verbose: 1
@@ -25,5 +25,5 @@ Game Simulator:
 
   Ledge:
 
-    # Number of cells on the one-dimensional board
-    l: 10
+    # The initial board of the game
+    board_init: [0,0,0,1,0,2,0,0,1,0]

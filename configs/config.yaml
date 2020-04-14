@@ -4,7 +4,7 @@ Game Simulator:
   game_type: "nim"
 
   # G - Number of games in a batch
-  batch_size: 1
+  episodes: 50
 
   # P - Starting player option - could be Player 1, 2 or 3 (random)
   starting_player: 1
@@ -12,18 +12,20 @@ Game Simulator:
   # M - Number of simulations (and hence roll-outs) per actual game move
   num_sim: 500
 
-  # Turn on/off game statistics
-  verbose: 1
 
-  Nim:
+  Game:
+    # Turn on/off game statistics
+    verbose: 1
 
-    # Number of pieces on the board
-    n: 5
+    Nim:
 
-    # Maximum number of pieces a player can move from the board at their turn
-    k: 2
+      # Number of pieces on the board
+      n: 5
 
-  Ledge:
+      # Maximum number of pieces a player can move from the board at their turn
+      k: 2
 
-    # The initial board of the game
-    board_init: [0,0,0,1,0,2,0,0,1,0]
+    Ledge:
+
+      # The initial board of the game
+      board_init: [0,0,0,1,0,2,0,0,1,0]

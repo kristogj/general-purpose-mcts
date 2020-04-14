@@ -1,8 +1,9 @@
 from game import Nim, Ledge
 import logging
-from game import Nim, Ledge
-from mcts import MonteCarloSearchTree
+from mcts import MonteCarloSearchTree, Node
 import random
+from state_manager import StateManager
+from utils import get_next_player
 
 
 class GameSimulator:
@@ -13,25 +14,25 @@ class GameSimulator:
     """
 
     def __init__(self, config):
+        """
+        Config consists of attributes used in the Game Simulator:
+            "game_type" - Which game should be played
+            "episodes" - Number of "actual" games to be played
+            "starting_player" - 1 (Player 1), 2 (Player 2), 3 (Random Player)
+            "num_sim" - Number of simulations done in the MCTS before every action taken in a game
+            "verbose" - Should every action in the actual games be printed
+            "Game" - game specific configurations
+        :param config: dict
+        """
         logging.info("Initializing GameSimulator")
         self.game_type = config["game_type"]
-        self.batch_size = config["batch_size"]  #
-        self.starting_player = config["starting_player"]  # 1 (Player 1), 2 (Player 2), 3 (Random Player)
+        self.episodes = config["episodes"]
+        self.starting_player = config["starting_player"]
         self.num_sim = config["num_sim"]
         self.verbose = config["verbose"]
 
         # Game configs
-        self.config_nim = config["Nim"]
-        self.config_ledge = config["Ledge"]
-
-    def get_new_game(self):
-        if self.game_type == "nim":
-            game = Nim(n=self.config_nim["n"], k=self.config_nim["k"], verbose=self.verbose)
-        elif self.game_type == "ledge":
-            game = Ledge(self.config_ledge["board_init"], verbose=self.verbose)
-        else:
-            raise ValueError("Game type is not supported")
-        return game
+        self.game_config = config["Game"]
 
     def get_start_player(self):
         """
@@ -43,10 +44,6 @@ class GameSimulator:
             player = random.randint(1, 2)
         return player
 
-    @staticmethod
-    def get_next_player(player):
-        return 2 if player == 1 else 1
-
     def simulate(self):
         """
         Run G consecutive games (aka. episodes) of the self.game_type using fixed values for the game parameters:
@@ -55,39 +52,49 @@ class GameSimulator:
         (80%).
         """
         wins = 0  # Number of times player 1 wins
-        for _ in range(self.batch_size):
-            game = self.get_new_game()
+
+        # Actual games being played
+        for _ in range(self.episodes):
+            # TODO: Should this actual game be a state manger or a Game
+            state_manager = StateManager(self.game_type, self.game_config)
+            state_manager.init_new_game()
 
             # For each game, a new Monte Carlo Search Tree is made
-            mcts = MonteCarloSearchTree()
+            mcts = MonteCarloSearchTree(self.game_type, self.game_config)
+            state, player = state_manager.get_game_state(), self.get_start_player()
+            mcts.set_root(Node(state, player))
 
-            player = self.get_start_player()
             # While the actual game is not finished
-            while not game.is_winning_state():
+            while True:
 
-                # Every time we shall select a new action, we perform M number of simulations
+                # Every time we shall select a new action, we perform M number of simulations in MCTS
                 for _ in range(self.num_sim):
                     # One iteration of Monte Carlo Tree Search consists of four steps
                     # 1. Selection
-                    mcts.selection()
+                    leaf = mcts.selection()
                     # 2. Expand selected leaf node
-                    mcts.expansion()
+                    sim_node = mcts.expansion(leaf)
                     # 3. Simulation
-                    mcts.simulation()
+                    winner = mcts.simulation(sim_node)
                     # 4. Backward propagation
-                    mcts.backward()
+                    mcts.backward(sim_node, winner)
 
                 # Now use the search tree to choose next action
-                action = None
+                new_root = mcts.select()
 
                 # Perform this action, moving the game from state s -> s´
-                game.perform_action(player, action)
+                state_manager.perform_action(player, new_root.action)
 
                 # Update player
-                player = self.get_next_player(player)
+                player = get_next_player(player)
 
                 # Set new root of MCST
-                mcts.set_root(None)  # TODO: Insert correct Node
+                mcts.set_root(new_root)
+
+            # If next player is 2, this means that we are in a winning state, and the next turn was suppose to be
+            # for Player 2 which implies that Player 1 did the last action moving it to a winning state.
+            if player == 2:
+                wins += 1
 
         # Report statistics
-        logging.info("Player 1 wins {} of {} games ({}%)".format(wins, self.batch_size, round(wins / self.batch_size)))
+        logging.info("Player 1 wins {} of {} games ({}%)".format(wins, self.episodes, round(wins / self.episodes)))

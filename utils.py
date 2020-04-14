@@ -10,6 +10,10 @@ def load_config(path):
     return yaml.load(open(path, 'r'), Loader=yaml.SafeLoader)
 
 
+def get_next_player(player):
+    return 2 if player == 1 else 1
+
+
 def init_logger():
     """
     Initialize logger settings

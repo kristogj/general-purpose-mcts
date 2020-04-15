@@ -7,20 +7,20 @@ Game Simulator:
   episodes: 50
 
   # P - Starting player option - could be Player 1, 2 or 3 (random)
-  starting_player: 1
+  starting_player: 2
 
   # M - Number of simulations (and hence roll-outs) per actual game move
   num_sim: 500
 
+  # Turn on/off game statistics
+  verbose: 0
 
   Game:
-    # Turn on/off game statistics
-    verbose: 1
 
     Nim:
 
       # Number of pieces on the board
-      n: 5
+      n: 10
 
       # Maximum number of pieces a player can move from the board at their turn
       k: 2

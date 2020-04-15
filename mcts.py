@@ -1,40 +1,8 @@
 from state_manager import StateManager
-from critic import Critic
 import operator
 from utils import get_next_player
 import random
-
-
-class Node:
-
-    def __init__(self, state, action):
-        self.state = state
-        self.player = None
-        self.action = action
-        self.parent = None
-        self.children = []
-
-        # Values that get updated through backward propagation of the MCTS
-        self.win = 0
-        self.total = 0
-
-    def increase_win(self):
-        self.win += 1
-
-    def increase_total(self):
-        self.total += 1
-
-    def set_parent(self, node):
-        self.parent = node
-
-    def set_action(self, action):
-        self.action = action
-
-    def add_child(self, node):
-        self.children.append(node)
-
-    def get_children(self):
-        return self.children
+from numpy import log, sqrt
 
 
 class MonteCarloSearchTree:
@@ -42,7 +10,8 @@ class MonteCarloSearchTree:
     def __init__(self, game_type, game_config):
         self.state_manager = StateManager(game_type, game_config)
         self.root = None
-        self.critic = Critic()
+
+        self.state_manager.init_new_game()
 
     def set_root(self, node):
         self.root = node
@@ -51,8 +20,15 @@ class MonteCarloSearchTree:
         if not root:
             root = self.root
 
+        def get_augmented_value(node, player):
+            # TODO: Implement this exploration constant, and check the calculations
+            c = 1
+            if player == 2:
+                c *= -1
+            return (node.win / (1 + node.total)) + c * sqrt(log(node.parent.total) / (1 + node.total))
+
         # If node has children, make the best choice based on the critic
-        children = self.critic.get_augmented_values(root.children)
+        children = [(node, get_augmented_value(node, root.player)) for node in root.children]
 
         # Maximise for P1 and minimize for P2
         if root.player == 1:
@@ -72,6 +48,7 @@ class MonteCarloSearchTree:
         # While root is not a leaf node
         while len(children) != 0:
             root = self.select(root=root)
+            children = root.get_children()
 
         return root
 
@@ -82,21 +59,18 @@ class MonteCarloSearchTree:
         :return:
         """
         if self.state_manager.is_winning_state(leaf.state):
-            # TODO: Check if this is the correct way to handle leaf is winning state
             return leaf
 
         # Get all legal child states from leaf state
-        children_states = self.state_manager.get_child_states(leaf.state)
-        children = [Node(state, action) for state, action in children_states]
+        leaf.children = self.state_manager.get_child_nodes(leaf.state)
 
         # Set leaf as their parent node
         child_player = get_next_player(leaf.player)
-        for child in children:
+        for child in leaf.children:
             child.player = child_player
             child.parent = leaf
-
-        # Tree is now expanded, now choose one of the children at random
-        return random.choice(children)
+        # Tree is now expanded, return one of them at random
+        return random.choice(leaf.children)
 
     def simulation(self, node):
         """
@@ -105,15 +79,17 @@ class MonteCarloSearchTree:
         :return: int - The player who won the simulated game
         """
         current_node = node
-        player = node.player
-        while not self.state_manager.is_winning_state(node.state):
-            children_states = self.state_manager.get_child_states(current_node.state)
+        children = self.state_manager.get_child_nodes(current_node.state)
+        player = get_next_player(node.player)
+        while len(children) != 0:
             # Use the default policy (random) to select a child
-            current_node = random.choice(children_states)
-            get_next_player(player)
+            current_node = random.choice(children)
+            player = get_next_player(player)
+            children = self.state_manager.get_child_nodes(current_node.state)
         return player
 
-    def backward(self, sim_node, winner):
+    @staticmethod
+    def backward(sim_node, winner):
         """
         Backward propagation - Passing the evaluation of a final state back up the tree, updating relevant data
         (see course lecture notes) at all nodes and edges on the path from the final state to the tree root.

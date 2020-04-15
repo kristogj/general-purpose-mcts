@@ -19,6 +19,29 @@ class Game(ABC):
     def is_winning_state(self):
         pass
 
+    @staticmethod
+    @abstractmethod
+    def verify_winning_state(state):
+        pass
+
+    @abstractmethod
+    def get_legal_actions(self, state):
+        """
+        Given a state, return all legal actions from that state.
+        :param state:
+        :return:
+        """
+        pass
+
+    @abstractmethod
+    def get_next_state(self, state, action):
+        """
+        Given a state and an action. Perform the action from that state, and return the new state.
+        :param state:
+        :param action:
+        :return:
+        """
+
 
 class Nim(Game):
     """
@@ -40,14 +63,51 @@ class Nim(Game):
             logging.info("Start Pile: {} stones".format(n))
 
     def perform_action(self, player, action):
-        # TODO: Perform action
+        """
+        Perform the action in the game
+        :param player: int - Which player is making the move
+        :param action: int - How many stones are removed
+        :return:
+        """
+        self.N -= action
         if self.verbose:
             logging.info("Player {} selects {} stones: Remaining stones = {}".format(player, action, self.N))
             if self.is_winning_state():
                 logging.info("Player {} wins".format(player))
 
+    def get_legal_actions(self, state):
+        """
+        Given a state, return all legal actions from that state.
+        :param state: int - How many stones are left on the board
+        :return: list[int]
+        """
+        if state == 0:
+            return []
+        return list(range(1, min(state, self.K) + 1))
+
+    def get_next_state(self, state, action):
+        """
+        Perform action on given state, and return new state
+        :param state:
+        :param action:
+        :return:
+        """
+        self.N = state
+        self.perform_action(None, action)
+        return self.N
+
+    def get_current_state(self):
+        return self.N
+
     def is_winning_state(self):
         return self.N == 0
+
+    @staticmethod
+    def verify_winning_state(state):
+        return state == 0
+
+    def __str__(self):
+        return "NIM N={} K={}".format(self.N, self.K)
 
 
 class Ledge(Game):

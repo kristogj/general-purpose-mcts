@@ -1,9 +1,8 @@
-from game import Nim, Ledge
 import logging
-from mcts import MonteCarloSearchTree, Node
+from mcts import MonteCarloSearchTree
+from tree_node import Node
 import random
-from state_manager import StateManager
-from utils import get_next_player
+from utils import get_next_player, get_new_game
 
 
 class GameSimulator:
@@ -55,17 +54,16 @@ class GameSimulator:
 
         # Actual games being played
         for _ in range(self.episodes):
-            # TODO: Should this actual game be a state manger or a Game
-            state_manager = StateManager(self.game_type, self.game_config)
-            state_manager.init_new_game()
+            # The actual game being played this episode
+            game = get_new_game(self.game_type, self.game_config, verbose=self.verbose)
 
             # For each game, a new Monte Carlo Search Tree is made
             mcts = MonteCarloSearchTree(self.game_type, self.game_config)
-            state, player = state_manager.get_game_state(), self.get_start_player()
-            mcts.set_root(Node(state, player))
+            state, player = game.get_current_state(), self.get_start_player()
+            mcts.set_root(Node(state, None))
 
             # While the actual game is not finished
-            while True:
+            while not game.is_winning_state():
 
                 # Every time we shall select a new action, we perform M number of simulations in MCTS
                 for _ in range(self.num_sim):
@@ -83,7 +81,7 @@ class GameSimulator:
                 new_root = mcts.select()
 
                 # Perform this action, moving the game from state s -> s´
-                state_manager.perform_action(player, new_root.action)
+                game.perform_action(player, new_root.action)
 
                 # Update player
                 player = get_next_player(player)
@@ -97,4 +95,4 @@ class GameSimulator:
                 wins += 1
 
         # Report statistics
-        logging.info("Player 1 wins {} of {} games ({}%)".format(wins, self.episodes, round(wins / self.episodes)))
+        logging.info("Player1 wins {} of {} games ({}%)".format(wins, self.episodes, round(100*(wins / self.episodes))))

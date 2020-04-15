@@ -6,3 +6,4 @@ if __name__ == '__main__':
     config = load_config("configs/config.yaml")
 
     game_simulator = GameSimulator(config["Game Simulator"])
+    game_simulator.simulate()

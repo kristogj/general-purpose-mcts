@@ -53,7 +53,8 @@ class GameSimulator:
         wins = 0  # Number of times player 1 wins
 
         # Actual games being played
-        for _ in range(self.episodes):
+        for episode in range(1, self.episodes + 1):
+            logging.info("Episode: {}".format(episode))
             # The actual game being played this episode
             game = get_new_game(self.game_type, self.game_config, verbose=self.verbose)
 

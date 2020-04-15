@@ -12,29 +12,40 @@ class Node:
         self.total = 0
 
     def increase_win(self):
+        """
+        Node was part of the path to victory - increase win value
+        :return:
+        """
         self.win += 1
 
     def increase_total(self):
+        """
+        Node was on the path taken in the search - increase total
+        :return:
+        """
         self.total += 1
 
     def set_parent(self, node):
+        """
+        Set the parent for this node equal to node
+        :param node: Node
+        :return:
+        """
         self.parent = node
 
     def set_action(self, action):
+        """
+        Set the action taken to get to this node
+        :param action: Type depends on the game
+        :return: None
+        """
         self.action = action
 
-    def add_child(self, node):
-        """
-        Add child to children if child not in children
-        :param node:
-        :return:
-        """
-        for child in self.children:
-            if child.state == node.state:
-                return
-        self.children.append(node)
-
     def get_children(self):
+        """
+        Return the children for this node
+        :return: list[Node]
+        """
         return self.children
 
     def __str__(self):

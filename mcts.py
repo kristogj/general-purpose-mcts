@@ -10,27 +10,36 @@ class MonteCarloSearchTree:
     def __init__(self, game_type, game_config):
         self.state_manager = StateManager(game_type, game_config)
         self.root = None
+        self.c = game_config["c"]  # Exploration constant
 
         self.state_manager.init_new_game()
 
     def set_root(self, node):
         self.root = node
 
+    def get_augmented_value(self, node, player):
+        """
+        Calculation needed in order to perform the Tree Policy
+        :param node: Node
+        :param player: int
+        :return: float
+        """
+        c = self.c if player == 1 else -self.c
+        return (node.win / (1 + node.total)) + c * sqrt(log(node.parent.total) / (1 + node.total))
+
     def select(self, root=None):
+        """
+        Calculate the the augmented value for each child, and select the best path for the current player to take.
+        :param root: Node
+        :return:
+        """
         if not root:
             root = self.root
 
-        def get_augmented_value(node, player):
-            # TODO: Implement this exploration constant, and check the calculations
-            c = 1
-            if player == 2:
-                c *= -1
-            return (node.win / (1 + node.total)) + c * sqrt(log(node.parent.total) / (1 + node.total))
+        # Calculate the augmented values needed for the tree policy
+        children = [(node, self.get_augmented_value(node, root.player)) for node in root.children]
 
-        # If node has children, make the best choice based on the critic
-        children = [(node, get_augmented_value(node, root.player)) for node in root.children]
-
-        # Maximise for P1 and minimize for P2
+        # Tree Policy = Maximise for P1 and minimize for P2
         if root.player == 1:
             root, value = max(children, key=operator.itemgetter(1))
         else:

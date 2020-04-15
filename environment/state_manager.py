@@ -11,11 +11,16 @@ class StateManager:
         self.game = None
 
     def init_new_game(self):
+        """
+        Initialize a new game for MCTS, this should not print any updates about the game as it will not be used
+        in a chronological game order
+        :return: None
+        """
         self.game = get_new_game(self.game_type, self.game_config, verbose=False)
 
     def get_child_nodes(self, state):
         """
-        Return a list of child nodes for that state
+        Given the state, return all child nodes possible
         :param state:
         :return:
         """
@@ -24,4 +29,9 @@ class StateManager:
         return [Node(state, action) for state, action in zip(new_states, legal_actions)]
 
     def is_winning_state(self, state):
+        """
+        Check if given state is a winning state
+        :param state: Type depends on the game
+        :return: boolean
+        """
         return self.game.verify_winning_state(state)

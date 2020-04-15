@@ -97,13 +97,26 @@ class Nim(Game):
         return self.N
 
     def get_current_state(self):
+        """
+        Current state of a Nim game can be represented by just the number of stones left on the board
+        :return: int
+        """
         return self.N
 
     def is_winning_state(self):
+        """
+        Check if there are no more stones left on the board.
+        :return: boolean
+        """
         return self.N == 0
 
     @staticmethod
     def verify_winning_state(state):
+        """
+        Given a state (in this case it state == #stones lef), and check if that is a winning state
+        :param state:
+        :return:
+        """
         return state == 0
 
     def __str__(self):

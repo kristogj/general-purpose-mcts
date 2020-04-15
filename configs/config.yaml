@@ -4,10 +4,10 @@ Game Simulator:
   game_type: "nim"
 
   # G - Number of games in a batch
-  episodes: 50
+  episodes: 5
 
   # P - Starting player option - could be Player 1, 2 or 3 (random)
-  starting_player: 2
+  starting_player: 1
 
   # M - Number of simulations (and hence roll-outs) per actual game move
   num_sim: 500
@@ -16,6 +16,8 @@ Game Simulator:
   verbose: 0
 
   Game:
+    # Exploration constant
+    c: 1
 
     Nim:
 

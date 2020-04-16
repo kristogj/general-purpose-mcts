@@ -90,10 +90,10 @@ class GameSimulator:
                 # Set new root of MCST
                 mcts.set_root(new_root)
 
-            # If next player is 2, this means that we are in a winning state, and the next turn was suppose to be
-            # for Player 2 which implies that Player 1 did the last action moving it to a winning state.
+            # If next player is 2 and we are in a win state, player 1 got us in a win state
             if player == 2:
                 wins += 1
 
         # Report statistics
-        logging.info("Player1 wins {} of {} games ({}%)".format(wins, self.episodes, round(100*(wins / self.episodes))))
+        logging.info(
+            "Player1 wins {} of {} games ({}%)".format(wins, self.episodes, round(100 * (wins / self.episodes))))

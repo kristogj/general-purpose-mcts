@@ -1,10 +1,10 @@
 Game Simulator:
 
   # Game type - either Nim or Ledge
-  game_type: "nim"
+  game_type: "ledge"
 
   # G - Number of games in a batch
-  episodes: 5
+  episodes: 10
 
   # P - Starting player option - could be Player 1, 2 or 3 (random)
   starting_player: 1

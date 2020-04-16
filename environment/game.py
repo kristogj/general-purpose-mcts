@@ -9,7 +9,6 @@ class Game(ABC):
 
     def __init__(self, verbose):
         self.verbose = verbose
-        pass
 
     @abstractmethod
     def perform_action(self, player, action):
@@ -26,26 +25,17 @@ class Game(ABC):
 
     @abstractmethod
     def get_legal_actions(self, state):
-        """
-        Given a state, return all legal actions from that state.
-        :param state:
-        :return:
-        """
         pass
 
     @abstractmethod
     def get_next_state(self, state, action):
-        """
-        Given a state and an action. Perform the action from that state, and return the new state.
-        :param state:
-        :param action:
-        :return:
-        """
+        pass
 
 
 class Nim(Game):
     """
-    Remove pieces from a nondescript board until a player removes the last piece.
+    Remove pieces from a nondescript board until a player removes the last piece. The player who removes the last
+    piece wins.
     """
 
     def __init__(self, n, k, verbose):
@@ -67,7 +57,7 @@ class Nim(Game):
         Perform the action in the game
         :param player: int - Which player is making the move
         :param action: int - How many stones are removed
-        :return:
+        :return: None
         """
         self.N -= action
         if self.verbose:
@@ -79,7 +69,7 @@ class Nim(Game):
         """
         Given a state, return all legal actions from that state.
         :param state: int - How many stones are left on the board
-        :return: list[int]
+        :return: list[int] - List of how many stones that can be removed from the board.
         """
         if state == 0:
             return []
@@ -88,9 +78,9 @@ class Nim(Game):
     def get_next_state(self, state, action):
         """
         Perform action on given state, and return new state
-        :param state:
-        :param action:
-        :return:
+        :param state: int - How many stones are on the board
+        :param action: int - How many stones should be removed from the board
+        :return: int - How many stones are left on the board
         """
         self.N = state
         self.perform_action(None, action)
@@ -113,9 +103,9 @@ class Nim(Game):
     @staticmethod
     def verify_winning_state(state):
         """
-        Given a state (in this case it state == #stones lef), and check if that is a winning state
-        :param state:
-        :return:
+        Given a state (in this case it state == #stones left), check if it is a winning state
+        :param state: int
+        :return: boolean
         """
         return state == 0
 
@@ -133,20 +123,95 @@ class Ledge(Game):
     def __init__(self, board, verbose):
         """
         Initialize the one-dimensional board
-        :param board: string - initial board configurations
+        :param board: list[int] - initial board configurations
         """
         super(Ledge, self).__init__(verbose)
         self.board = board
+        self.coins = {2: "gold", 1: "copper"}
 
         if verbose:
             logging.info("Start Board: {}".format(board))
 
     def perform_action(self, player, action):
-        # TODO: Perform action
+        """
+        Perform action on the current board being played.
+        :param player: int - Player who made the move
+        :param action: str - Defines an action as either "P" or "M-x-y" where x and y are integers.
+        :return: None
+        """
+        log_text = ""
+        if action == "P":
+            coin = self.board[0]
+            self.board[0] = 0
+            log_text = "P{} picks up {}: {}".format(player, self.coins[coin], self.board)
+        elif action.startswith("M"):
+            _from, _to = action.split("-")[1:]
+            _from, _to = int(_from), int(_to)
+            coin = self.board[_from]
+            self.board[_from], self.board[_to] = self.board[_to], self.board[_from]
+            log_text = "P{} moves {} from cell {} to {}: {}".format(player, self.coins[coin], _from, _to, self.board)
+
         if self.verbose:
-            logging.info("P1 moves copper from cell 8 to 6: [0 0 0 1 0 2 1 0 0 0]")  # Example
+            logging.info(log_text)
             if self.is_winning_state():
                 logging.info("Player {} wins".format(player))
 
+    def get_legal_actions(self, state):
+        """
+        Given a state, return all legal actions from that state.
+        A player can make two kind of moves:
+            a) (P)ick up the coin at index 0 (the ledge)
+                "P" means pick up the coin at the ledge, leaving it an empty cell.
+            b) (M)ove a coin to the left between its current position and its left-nearest-neighbour
+                "M-X-Y" where X and Y are two integers, means that you should move coin on index X to index Y.
+        :param state: int - How many stones are left on the board
+        :return: list[int]
+        """
+        legal_actions = []
+        if state[0] > 0:
+            legal_actions.append("P")  # Add the pick-up move if a coin is at the ledge
+
+        for i in reversed(range(len(state))):
+            if state[i] > 0:
+                j = i - 1
+                while state[j] == 0 and j >= 0:
+                    legal_actions.append("M-{}-{}".format(i, j))
+                    j -= 1
+        return legal_actions
+
+    def get_next_state(self, state, action):
+        """
+        Perform action on given state, and return new state
+        :param state:
+        :param action:
+        :return:
+        """
+        self.board = state.copy()
+        self.perform_action(None, action)
+        return self.board.copy()  # Return a copy of the board
+
+    def get_current_state(self):
+        """
+        Current state of a Ledge game can be represented by the board.
+        :return: int
+        """
+        return self.board.copy()  # Return a copy of the board
+
     def is_winning_state(self):
-        pass
+        """
+        Check if the current board has a gold coin on it. If not, the player who moved it of the board won.
+        :return: boolean
+        """
+        return 2 not in set(self.board)
+
+    @staticmethod
+    def verify_winning_state(state):
+        """
+        Given a state (in this case a 1d board), check if it is a winning state
+        :param state: list[int]
+        :return: boolean
+        """
+        return 2 not in set(state)
+
+    def __str__(self):
+        return "LEDGE board={}".format(self.board)

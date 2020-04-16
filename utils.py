@@ -19,7 +19,7 @@ def get_new_game(game_type, game_config, verbose):
     if game_type == "nim":
         game = Nim(n=game_config["Nim"]["n"], k=game_config["Nim"]["k"], verbose=verbose)
     elif game_type == "ledge":
-        game = Ledge(game_config["Ledge"]["board_init"], verbose=verbose)
+        game = Ledge(game_config["Ledge"]["board_init"].copy(), verbose=verbose)
     else:
         raise ValueError("Game type is not supported")
     return game

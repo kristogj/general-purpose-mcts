@@ -25,7 +25,7 @@ where N(s,a) is the number of traversal of edge (s,a),
 and n(s,a) is the number of those traversal that lead to a win.
 We then add u, which we call the exploration bonus. This is defined as: <br>
 ![action1](images/u.png) <br>
-where N(s) is the number of visits to node s. This combined
+where c is an exploration constant and N(s) is the number of visits to node s. This combined
 is what we call the tree policy which is used during the selection
 of next action. 
 

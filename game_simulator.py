@@ -79,7 +79,7 @@ class GameSimulator:
                     mcts.backward(sim_node, winner)
 
                 # Now use the search tree to choose next action
-                new_root = mcts.select()
+                new_root = mcts.select_actual_action()
 
                 # Perform this action, moving the game from state s -> s´
                 game.perform_action(player, new_root.action)

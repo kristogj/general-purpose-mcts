@@ -17,7 +17,7 @@ selecting actions in the tree depends on which player is making the move. <br>
 For player 1 the action selected is defined as:<br>
 ![action1](images/action_p1.png) <br>
 While for player 2 it is defined as: <br>
-![action1](images/action_p1.png) <br>
+![action1](images/action_p2.png) <br>
 where s is the state at time t, and a is the action taken from state s. Q then gives the value for taking
 that action in state s. I choosed to define Q as this: <br>
 ![action1](images/q.png) <br>

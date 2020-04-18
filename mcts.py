@@ -27,12 +27,15 @@ class MonteCarloSearchTree:
         c = self.c if player == 1 else -self.c
         return (node.win / (1 + node.total)) + c * sqrt(log(node.parent.total) / (1 + node.total))
 
-    def select(self, root):
+    def select(self, root=None):
         """
         Calculate the the augmented value for each child, and select the best path for the current player to take.
         :param root: Node
         :return:
         """
+        if not root:
+            root = self.root
+
         # Calculate the augmented values needed for the tree policy
         children = [(node, self.get_augmented_value(node, root.player)) for node in root.children]
 
@@ -109,12 +112,3 @@ class MonteCarloSearchTree:
                 node.increase_win()
             node.increase_total()
             node = node.parent
-
-    def select_actual_action(self):
-        """
-        To select the actual action to take in the game, select the edge with the highest visit count
-        :return: Node
-        """
-        children = [(child, child.total) for child in self.root.children]
-        root, value = max(children, key=operator.itemgetter(1))
-        return root

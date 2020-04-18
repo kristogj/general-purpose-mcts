@@ -17,27 +17,32 @@ class MonteCarloSearchTree:
     def set_root(self, node):
         self.root = node
 
-    def get_augmented_value(self, node, player):
+    def get_augmented_value(self, node, player, c):
         """
         Calculation needed in order to perform the Tree Policy
         :param node: Node
         :param player: int
+        :param c: Exploration constant - 0 when selecting actual actions
         :return: float
         """
-        c = self.c if player == 1 else -self.c
+        if c is not None:
+            c = c
+        else:
+            c = self.c if player == 1 else -self.c
         return (node.win / (1 + node.total)) + c * sqrt(log(node.parent.total) / (1 + node.total))
 
-    def select(self, root=None):
+    def select(self, root=None, c=None):
         """
         Calculate the the augmented value for each child, and select the best path for the current player to take.
         :param root: Node
+        :param c: Exploration constant -  used to overwrite when selecting actual actions
         :return:
         """
         if not root:
             root = self.root
 
         # Calculate the augmented values needed for the tree policy
-        children = [(node, self.get_augmented_value(node, root.player)) for node in root.children]
+        children = [(node, self.get_augmented_value(node, root.player, c)) for node in root.children]
 
         # Tree Policy = Maximise for P1 and minimize for P2
         if root.player == 1:

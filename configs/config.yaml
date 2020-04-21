@@ -1,10 +1,10 @@
 Game Simulator:
 
   # Game type - either Nim or Ledge
-  game_type: "ledge"
+  game_type: "nim"
 
   # G - Number of games in a batch
-  episodes: 25
+  episodes: 10
 
   # P - Starting player option - could be Player 1, 2 or 3 (random)
   starting_player: 1
@@ -22,10 +22,10 @@ Game Simulator:
     Nim:
 
       # Number of pieces on the board
-      n: 10
+      n: 75
 
       # Maximum number of pieces a player can move from the board at their turn
-      k: 2
+      k: 74
 
     Ledge:
 

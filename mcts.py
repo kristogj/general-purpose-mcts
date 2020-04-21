@@ -3,7 +3,6 @@ import operator
 from utils import get_next_player
 import random
 from numpy import log, sqrt
-import logging
 
 
 class MonteCarloSearchTree:

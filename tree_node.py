@@ -8,15 +8,8 @@ class Node:
         self.children = []
 
         # Values that get updated through backward propagation of the MCTS
-        self.win = 0
+        self.value = 0
         self.total = 0
-
-    def increase_win(self):
-        """
-        Node was part of the path to victory - increase win value
-        :return:
-        """
-        self.win += 1
 
     def increase_total(self):
         """

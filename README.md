@@ -19,10 +19,10 @@ For player 1 the action selected is defined as:<br>
 While for player 2 it is defined as: <br>
 ![action1](images/action_p2.png) <br>
 where s is the state at time t, and a is the action taken from state s. Q then gives the value for taking
-that action in state s. I choosed to define Q as this: <br>
+that action in state s. I choose to defined the update rule for Q as this: <br>
 ![action1](images/q.png) <br>
 where N(s,a) is the number of traversal of edge (s,a), 
-and n(s,a) is the number of those traversal that lead to a win.
+and z is the reward given at the end of a simulated game. The reward is equal 1 of player 1 wins, and 0 otherwise.
 We then add u, which we call the exploration bonus. This is defined as: <br>
 ![action1](images/u.png) <br>
 where c is an exploration constant and N(s) is the number of visits to node s. This combined

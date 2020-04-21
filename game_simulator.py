@@ -23,7 +23,7 @@ class GameSimulator:
             "Game" - game specific configurations
         :param config: dict
         """
-        logging.info("Initializing GameSimulator")
+        logging.info("Initializing GameSimulator - {}".format(config["game_type"]))
         self.game_type = config["game_type"]
         self.episodes = config["episodes"]
         self.starting_player = config["starting_player"]
@@ -61,11 +61,10 @@ class GameSimulator:
             # For each game, a new Monte Carlo Search Tree is made
             mcts = MonteCarloSearchTree(self.game_type, self.game_config)
             state, player = game.get_current_state(), self.get_start_player()
-            mcts.set_root(Node(state, None))
+            mcts.set_root(Node(state, None, player=player))
 
             # While the actual game is not finished
             while not game.is_winning_state():
-
                 # Every time we shall select a new action, we perform M number of simulations in MCTS
                 for _ in range(self.num_sim):
                     # One iteration of Monte Carlo Tree Search consists of four steps
@@ -74,12 +73,12 @@ class GameSimulator:
                     # 2. Expand selected leaf node
                     sim_node = mcts.expansion(leaf)
                     # 3. Simulation
-                    winner = mcts.simulation(sim_node)
+                    z = mcts.simulation(sim_node)
                     # 4. Backward propagation
-                    mcts.backward(sim_node, winner)
+                    mcts.backward(sim_node, z)
 
                 # Now use the search tree to choose next action
-                new_root = mcts.select(c=0)
+                new_root = mcts.select_actual_action(player)
 
                 # Perform this action, moving the game from state s -> s´
                 game.perform_action(player, new_root.action)

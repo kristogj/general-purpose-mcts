@@ -22,10 +22,10 @@ Game Simulator:
     Nim:
 
       # Number of pieces on the board
-      n: 10
+      n: 75
 
       # Maximum number of pieces a player can move from the board at their turn
-      k: 2
+      k: 74
 
     Ledge:
 

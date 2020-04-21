@@ -17,32 +17,24 @@ class MonteCarloSearchTree:
     def set_root(self, node):
         self.root = node
 
-    def get_augmented_value(self, node, player, c):
+    def get_augmented_value(self, node, player):
         """
         Calculation needed in order to perform the Tree Policy
         :param node: Node
         :param player: int
-        :param c: Exploration constant - 0 when selecting actual actions
         :return: float
         """
-        if c is not None:
-            c = c
-        else:
-            c = self.c if player == 1 else -self.c
-        return (node.win / (1 + node.total)) + c * sqrt(log(node.parent.total) / (1 + node.total))
+        c = self.c if player == 1 else -self.c
+        return node.value + c * sqrt(log(node.parent.total) / (1 + node.total))
 
-    def select(self, root=None, c=None):
+    def select(self, root):
         """
         Calculate the the augmented value for each child, and select the best path for the current player to take.
         :param root: Node
-        :param c: Exploration constant -  used to overwrite when selecting actual actions
         :return:
         """
-        if not root:
-            root = self.root
-
         # Calculate the augmented values needed for the tree policy
-        children = [(node, self.get_augmented_value(node, root.player, c)) for node in root.children]
+        children = [(node, self.get_augmented_value(node, root.player)) for node in root.children]
 
         # Tree Policy = Maximise for P1 and minimize for P2
         if root.player == 1:
@@ -72,9 +64,6 @@ class MonteCarloSearchTree:
         housing the parent state (a.k.a. parent node) to the nodes housing the child states (a.k.a. child nodes).
         :return:
         """
-        if self.state_manager.is_winning_state(leaf.state):
-            return leaf
-
         # Get all legal child states from leaf state
         leaf.children = self.state_manager.get_child_nodes(leaf.state)
 
@@ -83,8 +72,8 @@ class MonteCarloSearchTree:
         for child in leaf.children:
             child.player = child_player
             child.parent = leaf
-        # Tree is now expanded, return one of them at random
-        return random.choice(leaf.children)
+        # Tree is now expanded, return the leaf, and simulate to game over
+        return leaf
 
     def simulation(self, node):
         """
@@ -94,26 +83,49 @@ class MonteCarloSearchTree:
         """
         current_node = node
         children = self.state_manager.get_child_nodes(current_node.state)
-        player = get_next_player(node.player)
+        player = node.player
         while len(children) != 0:
             # Use the default policy (random) to select a child
             current_node = random.choice(children)
             player = get_next_player(player)
             children = self.state_manager.get_child_nodes(current_node.state)
-        return player
+        winner = get_next_player(player)  # Winner was actually the prev player who made a move
+        return int(winner == 1)
 
     @staticmethod
-    def backward(sim_node, winner):
+    def backward(sim_node, z):
         """
         Backward propagation - Passing the evaluation of a final state back up the tree, updating relevant data
         (see course lecture notes) at all nodes and edges on the path from the final state to the tree root.
         :param sim_node: Node - leaf node to go backward from
-        :param winner: int - player who won the simulated game
+        :param z: int - 1 if player 1 won, else 0
         :return: None
         """
         node = sim_node
-        while node:
-            if node.player == winner:
-                node.increase_win()
-            node.increase_total()
+        node.total += 1
+        while node.parent:
+            node.parent.total += 1
+            node.value += (z - node.value) / node.total
             node = node.parent
+
+    def select_actual_action(self, player):
+        """
+        To select the actual action to take in the game, select the edge with the highest visit count
+        :return: Node
+        """
+        children = [(child, child.value) for child in self.root.children]
+
+        # Tree Policy = Maximise for P1 and minimize for P2
+        if player == 1:
+            root, value = max(children, key=operator.itemgetter(1))
+        else:
+            root, value = min(children, key=operator.itemgetter(1))
+        return root
+
+    def tree_print(self):
+        nodes = [self.root]
+        while nodes:
+            curr = nodes[0]
+            nodes = nodes[1:]
+            print((curr.total, curr.player))
+            nodes += curr.children

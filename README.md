@@ -56,3 +56,5 @@ at an MCTS where there has been done y number of simulations.
 * mcts.py - This is where the algorithm is implemented.
 * tree_node.py - Defines a node in the search tree.
 * main.py - Run to start game simulator with the defined configurations in config.yaml
+
+Based on implementation described [here](https://www.sciencedirect.com/science/article/pii/S000437021100052X).
